@@ -1,5 +1,4 @@
-// cypress/e2e/fetch_spec.js
-
+// cypress/e2e/fetch_spic.cy.js
 
 /* 
     1. find the best algorithm to find the fake
@@ -10,11 +9,10 @@
         d. get list of weighings
         e. click on bar and check alert message
     3. perform e2e from step 1 using actions from step 2
+    output: alert message, number of weighings, list of weighings
   */
 
-  // cypress/e2e/test_find_fake_bar.cy.js
-
-describe('Find the Fake Bar Game', () => {
+describe('Find the Fake Gold Bar Game', () => {
     beforeEach(() => {
       cy.visit('http://sdetchallenge.fetch.com/'); 
     });
@@ -35,7 +33,12 @@ describe('Find the Fake Bar Game', () => {
       group1.forEach((bar) => cy.addBarToScale(bar, 'left'));
       group2.forEach((bar) => cy.addBarToScale(bar, 'right'));
       cy.clickWeighButton();
-      cy.wait(4000);
+
+      // the scale result needs a moment to render
+      cy.waitForTextUpdate('.result button', ['<', '>', '=']);
+
+      // This wait is for us humans to make it more watchable
+      cy.wait(3000);
   
       // Determine which group contains the fake bar
       return cy.getResult().then((result) => {
@@ -59,29 +62,25 @@ describe('Find the Fake Bar Game', () => {
     
         // Verify the alert message
         cy.on('window:alert', (text) => {
+          console.log(text);
           expect(text).to.contains(`Yay! You find it!`);
         });
-      });
+
+        // Get list of weighings
+        cy.getWeighingsList().then((weighings) => {
+          console.log(weighings.length, 'Total weighings.');
+          console.log('Weighings:', weighings);
+          expect(weighings).to.have.length.greaterThan(0);
+        });
+          
     });
     
-    
-
-    it('should click on the "Weigh" button and verify results', () => {
+    it('should fill out the bowls grids', () => {
       // Fill the left and right bowl grids with numbers 0-8
       for (let i = 0; i <= 8; i++) {
         cy.get(`#left_${i}`).type(`${i}`);
         cy.get(`#right_${i}`).type(`${i}`);
       }
-  
-      // Click the Weigh button
-      cy.get('#weigh').click();
-      cy.wait(4000);
-  
-      // Verify the weighings list is updated
-      cy.waitForGameUpdate(); 
-  
-      // Verify the result is updated
-      cy.get('.result').should('be.visible');
     });
   
     it('should click on the "Reset" button and verify scales and weighings are cleared', () => {
@@ -103,39 +102,7 @@ describe('Find the Fake Bar Game', () => {
   
       // Verify the weighings list is cleared
       cy.get('.game-info ol li').should('not.exist');
-    });
-  
-    it('should fill out left bowl grid with bars 0-8', () => {
-      // Fill left bowl grid with numbers 0-8
-      for (let i = 0; i <= 8; i++) {
-        cy.get(`#left_${i}`).type(`${i}`);
-      }
-    });
-    
-    it('should fill out right bowl grid with bars 0-8', () => {
-      // Fill right bowl grid with numbers 0-8
-      for (let i = 0; i <= 8; i++) {
-        cy.get(`#right_${i}`).type(`${i}`);
-      }
-    });    
-  
-    it('should get measurement results after weighing', () => {
-      // Fill the left bowl with bars 0-4 (example)
-      for (let i = 0; i <= 4; i++) {
-        cy.get(`#left_${i}`).type(`${i}`);
-      }
-    
-      // Fill the right bowl with bars 5-8 (example)
-      for (let i = 5; i <= 8; i++) {
-        cy.get(`#right_${i}`).type(`${i}`);
-      }
-    
-      // Click the Weigh button
-      cy.get('#weigh').click();
-    
-      // Check for results in the result div
-      cy.get('.result').should('contain.text', 'Result');
-    });    
+    });   
 
     it('should display an alert for invalid input when placing the same unique bar on both scales', () => {
       // Place the same unique bar on both scales
@@ -150,17 +117,6 @@ describe('Find the Fake Bar Game', () => {
         expect(text).to.contains('Inputs are invalid: Both sides have coin(s): 0');
       });
     });    
-  
-  
-    it('should get list of weighings', () => {
-      // Perform a weighing
-      cy.get('#weigh').click();
-  
-      // Check if weighings list is present and has items
-      cy.get('.game-info ol li')
-        .should('exist')
-        .and('have.length.greaterThan', 0);
-    });
   
     it('should click on a each bar and check alert message', () => {
       const bars = Array.from({ length: 9 }, (_, i) => i);
@@ -187,4 +143,4 @@ describe('Find the Fake Bar Game', () => {
     });
   });
   
-  
+});

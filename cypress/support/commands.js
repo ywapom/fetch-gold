@@ -1,49 +1,11 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+// cpress/support/commands.js
 
 Cypress.Commands.add('clearScales', () => {
-    // Loop through numbers 0 to 8
-    for (let i = 0; i <= 8; i++) {
-      // Clear non-empty left side fields
-      cy.get(`#left_${i}`)
-        .then(($input) => {
-          if ($input.val()) {
-            cy.wrap($input).clear();
-          }
-        });
-  
-      // Clear non-empty right side fields
-      cy.get(`#right_${i}`)
-        .then(($input) => {
-          if ($input.val()) {
-            cy.wrap($input).clear();
-          }
-        });
-    }
-  });  
+  for (let i = 0; i <= 8; i++) {
+    cy.get(`#left_${i}`).clear();
+    cy.get(`#right_${i}`).clear();
+  }
+});
 
 Cypress.Commands.add('addBarToScale', (barNumber, scale) => {
     // Determine the prefix based on the scale ('left' or 'right')
@@ -51,9 +13,9 @@ Cypress.Commands.add('addBarToScale', (barNumber, scale) => {
     
     // Find the first available input in the specified scale
     cy.get(`input[data-side="${scalePrefix}"]`)
-      .filter((index, input) => !input.value) // Filter to find empty inputs
-      .first() // Select the first available input
-      .type(barNumber.toString()); // Type the bar number into the input
+      .filter((index, input) => !input.value) 
+      .first() 
+      .type(barNumber.toString()); 
   });
 
 Cypress.Commands.add('clickWeighButton', () => {
@@ -70,5 +32,29 @@ Cypress.Commands.add('waitForGameUpdate', () => {
     cy.get('.game-info ol').should('have.length.greaterThan', 0); 
   });
   
+Cypress.Commands.add('getWeighingsList', () => {
+    return cy.get('.game-info ol li').then(($listItems) => {
+        return Cypress.$.makeArray($listItems).map((li) => li.innerText.trim());
+    });
+});
 
+Cypress.Commands.add('getAlertMessage', () => {
+    // Stub for capturing window alerts
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    return stub;
+});
+
+Cypress.Commands.add('waitForTextUpdate', (selector, expectedTexts, timeout = 5000) => {
+    cy.get(selector, { timeout })
+      .should('be.visible')
+      .should(($el) => {
+        const actualText = $el.text().trim();
+        expect(expectedTexts).to.include(
+          actualText,
+          `The text "${actualText}" was not found in the list of expected texts.`
+        );
+      });
+  });
   
