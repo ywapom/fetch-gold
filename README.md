@@ -39,6 +39,7 @@ To run the tests in headless mode, use the following command:
 
 3. View output in the console
 
+![alt text](https://github.com/ywapom/fetch-gold/fetch.png?raw=true)
    
    
 
